@@ -7117,7 +7117,7 @@
             "type": "string",
             "title": "Name",
             "description": "The name of the organization.",
-            "default": "FaithfulJackal"
+            "default": "WelcomingTiger"
           },
           "created_at": {
             "anyOf": [

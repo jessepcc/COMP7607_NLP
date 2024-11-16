@@ -43,26 +43,40 @@ else:
                 for m in st.session_state.messages
             ])
             payload = {
-                "model": "gpt-4o-mini",
                 "messages": messages,
-                "stream": True,
+                "stream": False,
             }
-            send_message_URL = base_url + "chat/completions"
-            response = requests.post(send_message_URL, json=payload, stream=True)
+            send_message_URL = base_url + "chat/completions-ns"
+            response = requests.post(send_message_URL, json=payload, stream=False)
+    
 
-            st_response = st.empty()
-            full_response = ""
-            for line in response.iter_lines(decode_unicode=True):
-                if line.startswith("data: "):
-                    line = line[len("data: "):]  # Remove the "data: " prefix
-                    if line == "[DONE]":
-                        break
-                    data = json.loads(line)
-                    if "choices" in data:
-                        delta = data["choices"][0].get("delta", {})
-                        content = delta.get("content", "")
-                        if content:
-                            full_response += content
-                            st_response.markdown(full_response)
 
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            # HIDDEN for handling stream response
+            # st_response = st.empty()
+            # full_response = ""
+            # for line in response.iter_lines(decode_unicode=True):
+            #     if line.startswith("data: "):
+            #         line = line[len("data: "):]  # Remove the "data: " prefix
+            #         if line == "[DONE]":
+            #             break
+            #         data = json.loads(line)
+            #         if "choices" in data:
+            #             delta = data["choices"][0].get("delta", {})
+            #             content = delta.get("content", "")
+            #             if content:
+            #                 full_response += content
+            #                 st_response.markdown(full_response)
+
+            # st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+              # Handle the new response structure
+            if "messages" in response.json():
+                for msg in response.json()["messages"]:
+                    if msg["message_type"] == "internal_monologue":
+                        st.session_state.messages.append({"role": "assistant", "content": msg["internal_monologue"]})
+                    elif msg["message_type"] == "function_call":
+                        st.session_state.messages.append({"role": "assistant", "content": msg["function_call"]["arguments"]})
+                    elif msg["message_type"] == "function_return":
+                        st.session_state.messages.append({"role": "assistant", "content": msg["function_return"]})
+            else:
+                st.session_state.messages.append({"role": "assistant", "content": "No response from the agent."})

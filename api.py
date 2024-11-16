@@ -30,11 +30,32 @@ class Message(BaseModel):
     content: str
 
 class ChatCompletionRequest(BaseModel):
-    model: str
     messages: List[Message]
     temperature: Optional[float] = 1.0
     max_tokens: Optional[int] = 100
     stream: Optional[bool] = False
+
+
+@app.post("/v1/chat/completions-ns")
+# non-streaming version
+async def chat_completion_ns(request: ChatCompletionRequest):
+    messages = request.messages
+    agent_id = agent_client.get_agent(messages[0].content)
+    if not agent_id:
+        return {"choices": [{"delta": {"role": "assistant", "content": "Agent not found"}}], "finish_reason": "stop"}
+    try:
+        response = agent_client.send_message(
+            agent_name="recruiter_agent",
+            message=messages[-1].content,
+            role="user",
+        )
+        print("++++++++++++++++++++++++++++++")
+        print(f"{response.model_dump_json()}")
+        return response
+    except Exception as e:
+        return {"choices": [{"delta": {"role": "assistant", "content": str(e)}}], "finish_reason": "stop"}
+
+
 
 @app.post("/v1/chat/completions")
 async def chat_completion(request: ChatCompletionRequest):

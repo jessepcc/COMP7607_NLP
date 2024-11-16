@@ -100,9 +100,10 @@ def lettaClient():
     client = LocalClient()
 
     base_llm_config = LLMConfig(
-        model="gpt-4o-mini",
+        model="ep-20241114114455-sqq46",
         model_endpoint_type="openai",
-        model_endpoint="https://api2.aigcbest.top/v1",
+        model_endpoint="https://ark.cn-beijing.volces.com/api/v3",
+        # model_endpoint="https://api2.aigcbest.top/v1",
         context_window=8192
         # model = "memgpt-openai",
         # model_endpoint = "https://inference.memgpt.ai",
@@ -116,8 +117,9 @@ def lettaClient():
     client.set_default_embedding_config( 
         EmbeddingConfig(
             embedding_endpoint_type="openai",
-            embedding_endpoint="https://api2.aigcbest.top/v1",
-            embedding_model="text-embedding-ada-002",
+            embedding_endpoint="https://ark.cn-beijing.volces.com/api/v3",
+            # embedding_endpoint="https://api2.aigcbest.top/v1",
+            embedding_model="ep-20241114114455-sqq46",
             embedding_dim=1536,
             embedding_chunk_size=300
             # embedding_endpoint_type = "hugging-face",
@@ -208,18 +210,20 @@ def lettaClient():
         recruiter_agent = client.create_agent(
             name="recruiter_agent", 
             memory=OrgMemory(
-                persona="You run a recruiting process for a company. " \
-                + "Your job is to continue to pull candidates from the " 
-                + "`search_candidates_db` tool until there are no more " \
-                + "candidates left. " \
-                + "For each candidate, consider the candidate by calling "
-                + "the `consider_candidate` tool. " \
-                + "You should continue to call `search_candidates_db` " \
-                + "followed by `consider_candidate` until there are no more " \
-                " candidates. ",
+                persona="You run a recruiting process for a company. ",
+                # + "Your job is to continue to pull candidates from the " 
+                # + "`search_candidates_db` tool until there are no more " \
+                # + "candidates left. " \
+                # + "For each candidate, consider the candidate by calling "
+                # + "the `consider_candidate` tool. " \
+                # + "You should continue to call `search_candidates_db` " \
+                # + "followed by `consider_candidate` until there are no more " \
+                # " candidates. ",
                 org_block=org_block
-            ), 
-            tools=[search_candidate_tool.name, consider_candidate_tool.name],
+            ),
+            include_base_tools=False,
+            system="You are a simple recruiter agent, reply message in simple language. DO NOT USE TOOL, DO NOT CALL FUNCTION REPLY TEXT MESSAGE TO USER ONLY", 
+            # tools=[search_candidate_tool.name, consider_candidate_tool.name],
             llm_config=base_llm_config
         )
 
