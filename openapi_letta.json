@@ -3939,15 +3939,27 @@
             "description": "The system prompt used by the agent."
           },
           "agent_type": {
-            "$ref": "#/components/schemas/AgentType",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentType"
+              }
+            ],
             "description": "The type of agent."
           },
           "llm_config": {
-            "$ref": "#/components/schemas/LLMConfig",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LLMConfig"
+              }
+            ],
             "description": "The LLM configuration used by the agent."
           },
           "embedding_config": {
-            "$ref": "#/components/schemas/EmbeddingConfig",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmbeddingConfig"
+              }
+            ],
             "description": "The embedding configuration used by the agent."
           }
         },
@@ -5291,7 +5303,11 @@
             "description": "The unique identifier of the assistant."
           },
           "thread": {
-            "$ref": "#/components/schemas/OpenAIThread",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OpenAIThread"
+              }
+            ],
             "description": "The thread to run."
           },
           "model": {
@@ -5926,7 +5942,11 @@
             ]
           },
           "status": {
-            "$ref": "#/components/schemas/JobStatus",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobStatus"
+              }
+            ],
             "description": "The status of the job.",
             "default": "created"
           },
@@ -6211,7 +6231,11 @@
             ]
           },
           "role": {
-            "$ref": "#/components/schemas/MessageRole",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MessageRole"
+              }
+            ],
             "description": "The role of the participant."
           },
           "text": {
@@ -7117,7 +7141,7 @@
             "type": "string",
             "title": "Name",
             "description": "The name of the organization.",
-            "default": "WelcomingTiger"
+            "default": "EmpatheticGiraffe"
           },
           "created_at": {
             "anyOf": [
@@ -7340,7 +7364,11 @@
             "description": "The description of the source."
           },
           "embedding_config": {
-            "$ref": "#/components/schemas/EmbeddingConfig",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmbeddingConfig"
+              }
+            ],
             "description": "The embedding configuration used by the source."
           },
           "metadata_": {
@@ -8508,7 +8536,11 @@
             ]
           },
           "role": {
-            "$ref": "#/components/schemas/MessageRole",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MessageRole"
+              }
+            ],
             "description": "The role of the participant."
           },
           "text": {
@@ -8783,7 +8815,11 @@
             "default": "function"
           },
           "function": {
-            "$ref": "#/components/schemas/letta__schemas__openai__chat_completions__ToolCallFunction",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/letta__schemas__openai__chat_completions__ToolCallFunction"
+              }
+            ],
             "description": "The arguments and name for the function"
           }
         },
@@ -8807,7 +8843,11 @@
             "default": "function"
           },
           "function": {
-            "$ref": "#/components/schemas/ToolCallFunction-Output",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ToolCallFunction-Output"
+              }
+            ],
             "description": "The arguments and name for the function"
           }
         },
@@ -8851,7 +8891,11 @@
             "default": "function"
           },
           "function": {
-            "$ref": "#/components/schemas/Function",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Function"
+              }
+            ],
             "description": "The function call."
           }
         },
@@ -9266,7 +9310,11 @@
                 "type": "string"
               },
               "role": {
-                "$ref": "#/components/schemas/LettaResponse/properties/MessageRole",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LettaResponse/properties/MessageRole"
+                  }
+                ],
                 "description": "The role of the participant."
               },
               "text": {
@@ -9434,7 +9482,11 @@
                 "type": "string"
               },
               "function": {
-                "$ref": "#/components/schemas/LettaResponse/properties/ToolCallFunction",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LettaResponse/properties/ToolCallFunction"
+                  }
+                ],
                 "description": "The arguments and name for the function"
               }
             },
