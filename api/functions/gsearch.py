@@ -24,14 +24,35 @@ def google_search(self, query: str) -> list[tuple[str, str]]:
     import time
     from concurrent.futures import ThreadPoolExecutor
 
+    import requests
+    import json
+
     import serpapi
     from openai import OpenAI
 
-    from memgpt.credentials import MemGPTCredentials
-    from memgpt.data_sources.connectors import WebConnector
-    from memgpt.utils import printd
+    from typing import Iterator
+
+    from letta.credentials import LettaCredentials
+    from letta.data_sources.connectors import DirectoryConnector
+    from letta.utils import printd
+
+    from dotenv import load_dotenv
+
+    load_dotenv()
 
     printd("Starting google search:", query)
+
+    class WebConnector(DirectoryConnector):
+        def __init__(self, urls: list[str] = None, html_to_text: bool = True):
+            self.urls = urls
+            self.html_to_text = html_to_text
+
+        def generate_files(self) -> Iterator[tuple[str, dict]]:  # -> Iterator[Document]:
+            from llama_index.readers.web import SimpleWebPageReader
+
+            files = SimpleWebPageReader(html_to_text=self.html_to_text).load_data(self.urls)
+            for document in files:
+                yield document.text, {"url": document.id_}
 
     def summarize_text(document_text: str, question: str) -> str:
         # TODO: make request to GPT-4 turbo API for conditional summarization
@@ -40,10 +61,10 @@ def google_search(self, query: str) -> list[tuple[str, str]]:
             + f"\n\n{document_text}"
         )
 
-        credentials = MemGPTCredentials().load()
+        credentials = LettaCredentials().load()
         assert credentials.openai_key is not None, credentials.openai_key
         # model = "gpt-4-1106-preview"
-        model = "gpt-4o"
+        model = "gpt-4o-mini"
 
         client = OpenAI(api_key=credentials.openai_key)
         chat_completion = client.chat.completions.create(
@@ -66,13 +87,28 @@ def google_search(self, query: str) -> list[tuple[str, str]]:
     # get links from web search
     try:
         st = time.time()
-        search = serpapi.Client(api_key=os.environ["SERPAPI_API_KEY"]).search(params)
+        print(f"api key: {os.getenv('"SERPAPI_API_KEY"')}")
+
+        # search = serpapi.Client(api_key=os.getenv("SERPAPI_API_KEY")).search(params)
+
+        url = "https://google.serper.dev/search"
+
+        payload = json.dumps({
+            "q": query
+        })
+        headers = {
+            'X-API-KEY': os.getenv("SERPAPI_API_KEY"),
+            'Content-Type': 'application/json'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+
         printd(f"Time taken to retrieve search results: {time.time() - st}")
-        results = search["organic_results"]
+        
+        results = response.json()["organic"]
 
         links = []
         for result in results:
-            data = {"title": result.get("title"), "link": result.get("link"), "snippet": result.get("snippet")}
+            data = {"title": result["title"], "link": result["link"], "snippet": result["snippet"]}
             links.append(data["link"])
         links = links[:5]
     except Exception as e:
