@@ -107,7 +107,6 @@ yarn-error.log*
 
 # Create React App
 build/
-public/
 *.cache
 *.env.local
 *.env.development.local
