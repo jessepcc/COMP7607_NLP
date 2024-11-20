@@ -1,6 +1,6 @@
 from os.path import join, dirname
 from typing import Optional, List
-from letta import LLMConfig, EmbeddingConfig, create_client, LocalClient, ChatMemory, Block
+from letta import LLMConfig, EmbeddingConfig, create_client, LocalClient, ChatMemory, Block, BasicBlockMemory
 from letta.schemas.block import Block 
 import json
 from tools import all_tools
@@ -44,10 +44,9 @@ client.set_default_embedding_config(
         # embedding_chunk_size = 600
     )
 )
-
-
+ 
 class TaskMemory(ChatMemory):
-    def __init__(self, human: str, persona: str, tasks: List[str]): 
+    def __init__(self, human: str, persona: str, tasks: List[str], objective_block: Block): 
         super().__init__(human=human, persona=persona) 
         self.link_block( 
             Block(
@@ -55,6 +54,9 @@ class TaskMemory(ChatMemory):
                 value=json.dumps(tasks), 
                 label="tasks"
             )
+        )
+        self.link_block(
+            objective_block
         )
 
     def task_queue_push(self, task_description: str) -> Optional[str]:
@@ -97,8 +99,20 @@ with open('persona.txt', 'r') as file:
 with open('human.txt', 'r') as file:
     human = file.read()
 
-# Initialize the agent with loaded tasks
-agent_memory = TaskMemory(human=human, persona=persona, tasks=[])
+objective_description = "A good postgraduate student should be able to manage their time effectively," \
+"communicate clearly, and work well with others."\
+"They should be able to achieve multiple goals at once and prioritize their work."\
+"Goals include but not limited to: achieve good academic results, find high-paying graduate jobs or internships, enrol in global top institutions for research study, maintain good physical and mental health"\
+"They should also be able to think critically, solve problems, and be self-motivated."\
+"As a postgraduate student, you should be able to set goals, plan your work, and never miss any deadlines."\
+"You should also be able to work independently and as part of a team."\
+"Finally, you should be able to reflect on your own work and learn from your experiences."
+
+objective_block = Block(label="objective", value=objective_description)
+
+# Initialize the agent with loaded tasks, persona, and objective
+agent_memory = TaskMemory(human=human, persona=persona, tasks=[], objective_block=objective_block)
+
 agent_state = client.create_agent(
     name="PG Copilot", 
     memory=agent_memory,
