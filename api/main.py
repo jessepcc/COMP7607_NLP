@@ -36,6 +36,8 @@ from starlette.websockets import WebSocket
 from starlette.types import Scope
 import ast
 
+from create_agent import TaskMemory
+
 # Function to extract cookies manually (if needed)
 def get_cookie(scope: Scope, key: str):
     cookies = {}
@@ -126,7 +128,6 @@ if not agent_state:
     exit(1)
 
 print(f"Agent found: {agent_state.name} with ID {str(agent_state.id)}")
-
 
 source_state = get_existing_source(data_source_name)
 
@@ -367,7 +368,6 @@ def fetch_google_calendar_events():
 # Calendar Events Endpoint
 @app.get("/api/calendar-events")
 def get_calendar_events():
-    user = get_current_user(db, token)
     events = fetch_google_calendar_events()
     return events
 
@@ -396,7 +396,6 @@ else:
 # Tasks Endpoints
 @app.get("/api/tasks")
 def get_tasks():
-    user = get_current_user()
     
     if not exists('./tasks.json'):
         logger.info("tasks.json does not exist. Returning empty task list.")
@@ -405,6 +404,8 @@ def get_tasks():
     with open('./tasks.json', 'r') as f:
         try:
             tasks = json.load(f)
+            if not isinstance(tasks, list):
+                tasks = [tasks]
             logger.info(f"Tasks loaded from JSON: {tasks}")
         except json.JSONDecodeError:
             tasks = []
@@ -416,16 +417,22 @@ def get_tasks():
 async def add_task(task: dict = Body(...)):
     user = get_current_user()
     task_description = task.get("task")
-    
     if not task_description:
         logger.warning(f"Empty task received from user: {user.username}")
         raise HTTPException(status_code=400, detail="Task description is required.")
     
     # Push task to agent memory and save it
-    agent_state.memory.task_queue_push(task_description)
-    logger.info(f"Task added by {user.username}: {task_description}")
+    # ?? the custom memory function is overridden in save_agent(agent, self.ms) in create_agent in sync server
+    # agent_state.memory.task_queue_push(task_description)    
     
-    return {"tasks": agent_state.memory.memory["tasks"].value}
+    tasks = json.loads(agent_state.memory.get_block("tasks").value)
+    tasks.append(task_description)
+    agent_state.memory.update_block_value("tasks", json.dumps(tasks))
+    # write to tasks.json
+    with open('./tasks.json', 'w') as f:
+        json.dump(tasks, f)
+    logger.info(f"Task added by {user.username}: {task_description}")
+    return {"tasks": tasks}
 
 # Text-to-Speech Playback Endpoint
 @app.get("/api/play-tts", response_class=FileResponse)

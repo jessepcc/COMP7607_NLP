@@ -9,42 +9,6 @@ from dotenv import load_dotenv
 # dotenv_path = join(dirname(__file__), '.env')
 load_dotenv()
 
-# Initialize the client and create tools
-client = create_client()
-
-base_llm_config = LLMConfig(
-    model="gpt-4o-mini",
-    model_endpoint_type="openai",
-    # model_endpoint="https://ark.cn-beijing.volces.com/api/v3",
-    # model_endpoint="https://api2.aigcbest.top/v1",
-    model_endpoint="https://inference.memgpt.ai", # memgpt free service
-    context_window=16384
-    # model = "memgpt-openai",
-    # model_endpoint = "https://inference.memgpt.ai",
-    # model_endpoint_type = "openai",
-    # context_window = 8192,
-)
-
-client.set_default_llm_config(
-    base_llm_config         
-)
-client.set_default_embedding_config( 
-    EmbeddingConfig(
-        embedding_endpoint_type="openai",
-        embedding_endpoint="https://api.openai.com/v1",
-        # embedding_endpoint="https://ark.cn-beijing.volces.com/api/v3",
-        # embedding_endpoint="https://api2.aigcbest.top/v1",
-        embedding_model="text-embedding-ada-002",
-        embedding_dim=1536,
-        embedding_chunk_size=300
-        # embedding_endpoint_type = "hugging-face",
-        # embedding_endpoint = "https://embeddings.memgpt.ai",
-        # embedding_model = "BAAI/bge-large-en-v1.5",
-        # embedding_dim = 1024,
-        # embedding_chunk_size = 600
-    )
-)
- 
 class TaskMemory(ChatMemory):
     def __init__(self, human: str, persona: str, tasks: List[str], objective_block: Block): 
         super().__init__(human=human, persona=persona) 
@@ -89,36 +53,82 @@ class TaskMemory(ChatMemory):
         if len(tasks) == 0: 
             return None
         task = tasks[0]
-        print("CURRENT TASKS: ", tasks)
         self.memory.update_block_value("tasks", json.dumps(tasks[1:]))
+        # update the tasks.json
+        with open('tasks.json', 'w') as f:
+            json.dump(tasks[1:], f)
+
         return task
 
-with open('persona.txt', 'r') as file:
-    persona = file.read()
 
-with open('human.txt', 'r') as file:
-    human = file.read()
+# Place the rest of the code inside this block
+if __name__ == "__main__":
+    # Initialize the client and create tools
+    client = create_client()
 
-objective_description = "A good postgraduate student should be able to manage their time effectively," \
-"communicate clearly, and work well with others."\
-"They should be able to achieve multiple goals at once and prioritize their work."\
-"Goals include but not limited to: achieve good academic results, find high-paying graduate jobs or internships, enrol in global top institutions for research study, maintain good physical and mental health"\
-"They should also be able to think critically, solve problems, and be self-motivated."\
-"As a postgraduate student, you should be able to set goals, plan your work, and never miss any deadlines."\
-"You should also be able to work independently and as part of a team."\
-"Finally, you should be able to reflect on your own work and learn from your experiences."
+    base_llm_config = LLMConfig(
+        model="gpt-4o-mini",
+        model_endpoint_type="openai",
+        # model_endpoint="https://ark.cn-beijing.volces.com/api/v3",
+        # model_endpoint="https://api2.aigcbest.top/v1",
+        model_endpoint="https://inference.memgpt.ai", # memgpt free service
+        context_window=16384
+        # model = "memgpt-openai",
+        # model_endpoint = "https://inference.memgpt.ai",
+        # model_endpoint_type = "openai",
+        # context_window = 8192,
+    )
 
-objective_block = Block(label="objective", value=objective_description)
+    client.set_default_llm_config(
+        base_llm_config         
+    )
+    client.set_default_embedding_config( 
+        EmbeddingConfig(
+            embedding_endpoint_type="openai",
+            embedding_endpoint="https://api.openai.com/v1",
+            # embedding_endpoint="https://ark.cn-beijing.volces.com/api/v3",
+            # embedding_endpoint="https://api2.aigcbest.top/v1",
+            embedding_model="text-embedding-ada-002",
+            embedding_dim=1536,
+            embedding_chunk_size=300
+            # embedding_endpoint_type = "hugging-face",
+            # embedding_endpoint = "https://embeddings.memgpt.ai",
+            # embedding_model = "BAAI/bge-large-en-v1.5",
+            # embedding_dim = 1024,
+            # embedding_chunk_size = 600
+        )
+    )
 
-# Initialize the agent with loaded tasks, persona, and objective
-agent_memory = TaskMemory(human=human, persona=persona, tasks=[], objective_block=objective_block)
 
-agent_state = client.create_agent(
-    name="PG Copilot", 
-    memory=agent_memory,
-    tools=[tool.name for tool in all_tools]
-)
+    with open('persona.txt', 'r') as file:
+        persona = file.read()
 
-print(f"Created agent: {agent_state.name} with ID {str(agent_state.id)}")
+    with open('human.txt', 'r') as file:
+        human = file.read()
 
-# Created agent: PG Copilot with ID agent-d7da8047-00ca-4010-ae97-6bae5c7ecb97
+    objective_description = "A good postgraduate student should be able to manage their time effectively," \
+    "communicate clearly, and work well with others."\
+    "They should be able to achieve multiple goals at once and prioritize their work."\
+    "Goals include but not limited to: achieve good academic results, find high-paying graduate jobs or internships, enrol in global top institutions for research study, maintain good physical and mental health"\
+    "They should also be able to think critically, solve problems, and be self-motivated."\
+    "As a postgraduate student, you should be able to set goals, plan your work, and never miss any deadlines."\
+    "You should also be able to work independently and as part of a team."\
+    "Finally, you should be able to reflect on your own work and learn from your experiences."
+
+    objective_block = Block(label="objective", value=objective_description)
+
+    # Initialize the agent with loaded tasks, persona, and objective block
+    agent_state = client.create_agent(
+        name="PG Copilot", 
+        memory=TaskMemory(human=human,
+                          persona=persona,
+                          tasks=[],
+                          objective_block=objective_block
+                          ),
+        tools=[tool.name for tool in all_tools]
+    )
+
+
+    print(f"Created agent: {agent_state.name} with ID {str(agent_state.id)}")
+
+    # Created agent: PG Copilot with ID agent-d7da8047-00ca-4010-ae97-6bae5c7ecb97
