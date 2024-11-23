@@ -329,8 +329,8 @@ async def upload_file(file: UploadFile):
 
 # Function to fetch Google Calendar events
 def fetch_google_calendar_events():
-    TOKEN_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'backend', 'gcal_token.json')
-    CREDENTIALS_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'backend', 'google_api_credentials.json')
+    TOKEN_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'api', 'gcal_token.json')
+    CREDENTIALS_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'api', 'google_api_credentials.json')
     SCOPES = ["https://www.googleapis.com/auth/calendar"]
     
     # Load credentials
