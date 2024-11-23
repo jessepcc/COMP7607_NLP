@@ -19,8 +19,8 @@ def schedule_event(self, title: str, start: str, end: str, description: str = No
     from googleapiclient.discovery import build
     import os
     def get_calendar_service():
-        TOKEN_PATH = os.path.join('..', 'backend', 'gcal_token.json')
-        CREDENTIALS_PATH = os.path.join('..', 'backend', 'google_api_credentials.json')
+        TOKEN_PATH = os.path.join('..', 'api', 'gcal_token.json')
+        CREDENTIALS_PATH = os.path.join('..', 'api', 'google_api_credentials.json')
         SCOPES = ["https://www.googleapis.com/auth/calendar"]
         
         creds = None

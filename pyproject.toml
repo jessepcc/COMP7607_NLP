@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "<3.13,>=3.10"
-letta = "^0.5.2"
+letta = "0.5.2"
 fastapi = "^0.115.4"
 streamlit = "^1.40.1"
 openai = "^1.54.3"
@@ -37,6 +37,7 @@ passlib = "^1.7.4"
 serpapi = "^0.1.5"
 apscheduler = "^3.10.4"
 docker = "^7.1.0"
+llama-index = ">=0.11.9,<0.12.0"
 
 
 [tool.poetry.group.dev.dependencies]

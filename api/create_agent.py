@@ -70,8 +70,8 @@ if __name__ == "__main__":
         model="gpt-4o-mini",
         model_endpoint_type="openai",
         # model_endpoint="https://ark.cn-beijing.volces.com/api/v3",
-        # model_endpoint="https://api2.aigcbest.top/v1",
-        model_endpoint="https://inference.memgpt.ai", # memgpt free service
+        model_endpoint="https://api2.aigcbest.top/v1",
+        # model_endpoint="https://inference.memgpt.ai", # memgpt free service
         context_window=16384
         # model = "memgpt-openai",
         # model_endpoint = "https://inference.memgpt.ai",
@@ -85,9 +85,9 @@ if __name__ == "__main__":
     client.set_default_embedding_config( 
         EmbeddingConfig(
             embedding_endpoint_type="openai",
-            embedding_endpoint="https://api.openai.com/v1",
+            # embedding_endpoint="https://api.openai.com/v1",
             # embedding_endpoint="https://ark.cn-beijing.volces.com/api/v3",
-            # embedding_endpoint="https://api2.aigcbest.top/v1",
+            embedding_endpoint="https://api2.aigcbest.top/v1",
             embedding_model="text-embedding-ada-002",
             embedding_dim=1536,
             embedding_chunk_size=300

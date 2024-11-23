@@ -32,22 +32,22 @@ def google_search(self, query: str) -> list[tuple[str, str]]:
 
     from typing import Iterator
 
-    from letta.credentials import LettaCredentials
     from letta.data_sources.connectors import DirectoryConnector
     from letta.utils import printd
 
     from dotenv import load_dotenv
 
-    load_dotenv()
+    path = os.path.join("..", ".env")
+    load_dotenv(dotenv_path=path)
 
-    printd("Starting google search:", query)
+    print("Starting google search:", query)
 
     class WebConnector(DirectoryConnector):
         def __init__(self, urls: list[str] = None, html_to_text: bool = True):
             self.urls = urls
             self.html_to_text = html_to_text
 
-        def generate_files(self) -> Iterator[tuple[str, dict]]:  # -> Iterator[Document]:
+        def generate_documents(self) -> Iterator[tuple[str, dict]]:  # -> Iterator[Document]:
             from llama_index.readers.web import SimpleWebPageReader
 
             files = SimpleWebPageReader(html_to_text=self.html_to_text).load_data(self.urls)
@@ -61,12 +61,20 @@ def google_search(self, query: str) -> list[tuple[str, str]]:
             + f"\n\n{document_text}"
         )
 
-        credentials = LettaCredentials().load()
-        assert credentials.openai_key is not None, credentials.openai_key
+        # credentials = LettaCredentials().load()
+        # assert credentials.openai_key is not None, credentials.openai_key
         # model = "gpt-4-1106-preview"
-        model = "gpt-4o-mini"
 
-        client = OpenAI(api_key=credentials.openai_key)
+
+        # get openai key from .env
+        model = "gpt-4o-mini"
+        # get api from .env
+        openai_key = os.getenv("OPENAI_API_KEY", "")
+        endpoint = os.getenv("OPENAI_API_BASE", "https://api.openai.com")
+        client = OpenAI(
+            base_url=endpoint,
+            api_key=openai_key)
+        
         chat_completion = client.chat.completions.create(
             messages=[
                 {"role": "user", "content": prompt},
@@ -79,15 +87,9 @@ def google_search(self, query: str) -> list[tuple[str, str]]:
             return None
         return response
 
-    params = {
-        "engine": "google",
-        "q": query,
-    }
-
     # get links from web search
     try:
         st = time.time()
-        print(f"api key: {os.getenv('"SERPAPI_API_KEY"')}")
 
         # search = serpapi.Client(api_key=os.getenv("SERPAPI_API_KEY")).search(params)
 
@@ -115,8 +117,6 @@ def google_search(self, query: str) -> list[tuple[str, str]]:
         print(f"An error occurred with retrieving results: {e}")
         return []
 
-    print("links", links)
-
     # retrieve text data from links
 
     def read_and_summarize_link(link):
@@ -136,6 +136,7 @@ def google_search(self, query: str) -> list[tuple[str, str]]:
     try:
         futures = []
         st = time.time()
+        print(f"start with {len(links)} links")
         with ThreadPoolExecutor(max_workers=16) as executor:
             for link in links:
                 future = executor.submit(read_and_summarize_link, link)
