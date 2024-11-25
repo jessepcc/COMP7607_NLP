@@ -50,6 +50,9 @@ class TaskMemory(ChatMemory):
         """
         import json
         tasks = json.loads(self.memory.get_block("tasks").value)
+        print("?????")
+        print(self.memory)
+
         if len(tasks) == 0: 
             return None
         task = tasks[0]
@@ -70,8 +73,8 @@ if __name__ == "__main__":
         model="gpt-4o-mini",
         model_endpoint_type="openai",
         # model_endpoint="https://ark.cn-beijing.volces.com/api/v3",
-        model_endpoint="https://api2.aigcbest.top/v1",
-        # model_endpoint="https://inference.memgpt.ai", # memgpt free service
+        # model_endpoint="https://api2.aigcbest.top/v1",
+        model_endpoint="https://inference.memgpt.ai", # memgpt free service
         context_window=16384
         # model = "memgpt-openai",
         # model_endpoint = "https://inference.memgpt.ai",
@@ -87,7 +90,8 @@ if __name__ == "__main__":
             embedding_endpoint_type="openai",
             # embedding_endpoint="https://api.openai.com/v1",
             # embedding_endpoint="https://ark.cn-beijing.volces.com/api/v3",
-            embedding_endpoint="https://api2.aigcbest.top/v1",
+            embedding_endpoint="https://api2.aigcbest.top",
+            #embedding_endpoint="https://api2.aigcbest.top",
             embedding_model="text-embedding-ada-002",
             embedding_dim=1536,
             embedding_chunk_size=300
@@ -116,16 +120,17 @@ if __name__ == "__main__":
     "Finally, you should be able to reflect on your own work and learn from your experiences."
 
     objective_block = Block(label="objective", value=objective_description)
-
+    '''task_queue_push_tool =  client.create_tool(TaskMemory.task_queue_push, name="task_queue_push")
+    task_queue_pop_tool =  client.create_tool(TaskMemory.task_queue_pop, name="task_queue_pop")'''
     # Initialize the agent with loaded tasks, persona, and objective block
     agent_state = client.create_agent(
         name="PG Copilot", 
         memory=TaskMemory(human=human,
                           persona=persona,
-                          tasks=[],
+                          tasks=["Have a meeting on 28 November 2024 at 03:00"],
                           objective_block=objective_block
                           ),
-        tools=[tool.name for tool in all_tools]
+        tools=[tool.name for tool in all_tools]#+[task_queue_push_tool,task_queue_pop_tool]
     )
 
 

@@ -6,11 +6,12 @@ from functions.gsearch import google_search
 from functions.schedule_event import schedule_event
 from functions.list_upcoming_events import list_upcoming_events
 from functions.git_repo import create_git_repo
-from functions.file_functions import read_file, write_file
+from functions.file_functions import read_file, write_file,analyze_directory
 from functions.website_crawler import analyse_website
 from functions.docker_functions import start_docker_container, stop_docker_container
-from functions.coding_functions import read_and_identify_code, gather_project_files, start_code_execution_container, execute_code_in_container, capture_container_logs, handle_code_execution, install_dependencies, create_tar_with_file
+from functions.coding_functions import read_and_identify_code, gather_project_files, start_code_execution_container, execute_code_in_container, capture_container_logs, handle_code_execution, install_dependencies, create_tar_with_file#generate_mermaid_diagram
 from functions.generate_image import create_image
+from functions.crazy_functions import analyze_project
 # Initialize the client
 client = create_client()
 
@@ -34,7 +35,9 @@ capture_container_logs_tool = client.create_tool(capture_container_logs, name="c
 handle_code_execution_tool  = client.create_tool(handle_code_execution, name="handle_code_execution")
 create_tar_with_file_tool = client.create_tool(create_tar_with_file, name="create_tar_with_file")
 create_image_tool = client.create_tool(create_image, name="create_image")
-
+analyze_directory_tool = client.create_tool(analyze_directory, name="analyze_directory")
+#generate_mermaid_diagram_tool = client.create_tool(generate_mermaid_diagram, name="generate_mermaid_diagram")
+analyze_project_tool = client.create_tool(analyze_project, name="analyze_project")
 # Export the tools
 all_tools = [
     read_and_identify_code_tool, start_code_execution_container_tool,
@@ -42,5 +45,5 @@ all_tools = [
     install_dependencies_tool, execute_code_in_container_tool, capture_container_logs_tool, handle_code_execution_tool,
     schedule_event_tool, list_upcoming_events_tool, gather_project_files_tool,
     start_docker_container_tool, stop_docker_container_tool, create_tar_with_file_tool,
-    write_file_tool, read_file_tool, sms_tool, search_tool, create_image_tool
+    write_file_tool, read_file_tool, sms_tool, search_tool, create_image_tool,analyze_project_tool#generate_mermaid_diagram_tool#,analyze_directory_tool
 ]

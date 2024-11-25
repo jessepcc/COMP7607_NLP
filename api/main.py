@@ -181,6 +181,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
+            pre_function_name = "none"
             try:
                 # Receive the incoming message
                 data = await websocket.receive_text()
@@ -214,12 +215,14 @@ async def websocket_endpoint(websocket: WebSocket):
                                 "type": "thought",
                                 "message": r.internal_monologue
                             }
+
                             await websocket.send_json(thought_message)
                             logger.debug(f"Sent thought message to {username}: {thought_message}")
 
                         elif message_type == "function_call":
                             function_call = r.function_call
                             function_name = function_call.name
+
                             arguments_str = function_call.arguments
                             if function_name == "send_message":
                                 content = json.loads(arguments_str)
@@ -234,6 +237,8 @@ async def websocket_endpoint(websocket: WebSocket):
                                     "type": "function_call",
                                     "message": f"Function: {function_name} called with arguments: {arguments_str}"
                                 }
+                                print(function_name)
+                                pre_function_name = function_name
                                 await websocket.send_json(function_call_message)
                                 logger.debug(f"Sent function call to {username}: {function_call_message}")
 
@@ -243,7 +248,11 @@ async def websocket_endpoint(websocket: WebSocket):
                                 "type": "function_return",
                                 "message": function_return
                             }
-                            await websocket.send_json(function_return_message)
+                            if pre_function_name=="analyze_project":
+                                await websocket.send_json(function_return)
+                                pre_function_name="none"
+                            else:
+                                await websocket.send_json(function_return_message)
                             logger.debug(f"Sent function return to {username}: {function_return_message}")
 
                         else:
@@ -423,14 +432,21 @@ async def add_task(task: dict = Body(...)):
     
     # Push task to agent memory and save it
     # ?? the custom memory function is overridden in save_agent(agent, self.ms) in create_agent in sync server
-    # agent_state.memory.task_queue_push(task_description)    
+    '''print("agent_state.memory before")
+    print(agent_state.memory)
+    agent_state.memory.task_queue_push(task_description)   
+    tasks_tmp = json.loads(self.memory.get_block("tasks").value)
+    tasks_tmp.append(task_description)
+    self.memory.update_block_value("tasks", json.dumps(tasks))
+    print("agent_state.memory after")
+    print(agent_state.memory) '''
     
     tasks = json.loads(agent_state.memory.get_block("tasks").value)
-    tasks.append(task_description)
+    #tasks.append(task_description)
     agent_state.memory.update_block_value("tasks", json.dumps(tasks))
     # write to tasks.json
-    with open('./tasks.json', 'w') as f:
-        json.dump(tasks, f)
+    '''with open('./tasks.json', 'w') as f:
+        json.dump(tasks, f)'''
     logger.info(f"Task added by {user.username}: {task_description}")
     return {"tasks": tasks}
 

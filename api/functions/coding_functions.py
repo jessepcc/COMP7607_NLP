@@ -39,14 +39,110 @@ def gather_project_files(self, directory: str) -> dict:
     import os
     project_files = {}
     try:
-        for filename in os.listdir(directory):
+        '''for filename in os.listdir(directory):
             filepath = os.path.join(directory, filename)
             if filename in ['requirements.txt', 'package.json']:  # Extendable to other files
                 with open(filepath, 'r') as file:
                     project_files[filename] = file.read()
+        return project_files'''
+        for filename in os.listdir(directory):
+            filepath = os.path.join(directory, filename)
+            # 检查文件是否以 .py 结尾
+            if filename.endswith('.py'):
+                with open(filepath, 'r', encoding='utf-8') as file:
+                    project_files[filename] = file.read()
         return project_files
     except Exception as e:
         return f"Error gathering project files: {str(e)}"
+
+'''def generate_mermaid_diagram(self, directory_path: str) -> str:
+    """
+    Generate a Mermaid.js mind map for a directory structure and return the image link.
+
+    Args:
+        directory_path (str): Path to the directory.
+
+    Returns:
+        str: Link to the mind map image.
+    """
+    import os
+    from dotenv import load_dotenv
+    import openai
+    import requests
+
+    # Step 1: Load .env file and read API configuration
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    api_base = os.getenv("OPENAI_API_BASE")
+
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY not found in .env file. Please check your configuration.")
+
+
+    # Step 2: Traverse the directory and build the file tree
+    def build_file_tree(directory):
+        tree = {}
+        for root, dirs, files in os.walk(directory):
+            subdir = tree
+            for part in root[len(directory):].strip(os.sep).split(os.sep):
+                if part:
+                    subdir = subdir.setdefault(part, {})
+            for file in files:
+                subdir[file] = None
+        return tree
+
+    def build_mermaid_code(tree, prefix="    "):
+        lines = []
+        for key, value in tree.items():
+            node = f"\"{key}\""
+            if isinstance(value, dict):  # Directory
+                lines.append(f"{prefix}{node}:::Folder")
+                sublines = build_mermaid_code(value, prefix + "    ")
+                lines.extend(sublines)
+            else:  # File
+                lines.append(f"{prefix}{node}:::File")
+        return lines
+
+    # Generate Mermaid code
+    file_tree = build_file_tree(directory_path)
+    mermaid_lines = build_mermaid_code(file_tree)
+    mermaid_code = "```mermaid\nmindmap\n" + "\n".join(mermaid_lines) + "\n```"
+
+    # Step 3: Call GPT model to refine Mermaid code
+    prompt = (
+        "The following is a mind map description of a project file structure. "
+        "Please refine it to make the Mermaid.js code more readable:\n\n"
+        f"{mermaid_code}\n\n"
+        "After refinement, return the final code enclosed in ```mermaid``` tags."
+    )
+    client = OpenAI(
+    api_key=api_key,  # This is the default and can be omitted
+)
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are an expert in Mermaid.js and file structure visualization."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1000
+        )
+        optimized_mermaid_code = response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error generating optimized Mermaid code: {str(e)}"
+
+    # Step 4: Upload to Mermaid Live Editor and generate the image link
+    url = "https://mermaid.ink/img/"
+    try:
+        response = requests.post(url, json={"code": optimized_mermaid_code, "type": "mindmap"})
+        if response.status_code == 200:
+            return response.text.strip()
+        else:
+            return f"Failed to generate the mind map. Mermaid Live Editor returned status code {response.status_code}."
+    except requests.RequestException as e:
+        return f"Failed to connect to Mermaid Live Editor: {str(e)}"'''
+
+
 
 def start_code_execution_container(self, language: str) -> str:
     """
