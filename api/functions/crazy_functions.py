@@ -1,27 +1,27 @@
-
-# 主流程函数
-def analyze_project(self,project_folder: str, output_folder: str)->str:
+# Main process function
+def analyze_project(self, project_folder: str, output_folder: str) -> str:
     """
     Analyze all Python files in the specified directory and provide a summary.
 
     Args:
         self (Agent): The agent instance calling the function.
         project_folder (str): The path to the directory containing Python files to be analyzed.
-        output_folder (str):The path of output file.
+        output_folder (str): The path of output file.
 
     Returns:
-        str: A summary analysis result for the entire project. 
+        str: A summary analysis result for the entire project.
     """
     import os
     import json
     import threading
     from concurrent.futures import ThreadPoolExecutor
-    from typing import List, Dict  
-    # 单文件分析任务
+    from typing import List, Dict
+
+    # Single file analysis task
     MERMAID_TEMPLATE = r"""
 ```mermaid
 flowchart LR
-    %% <gpt_academic_hide_mermaid_code> 一个特殊标记，用于在生成mermaid图表时隐藏代码块
+    %% <gpt_academic_hide_mermaid_code> A special marker used to hide the code block when generating a mermaid chart
     classDef Comment stroke-dasharray: 5 5
     subgraph {graph_name}
 {relationship}
@@ -33,19 +33,18 @@ flowchart LR
         import json
         import threading
         from concurrent.futures import ThreadPoolExecutor
-        from typing import List, Dict  
-        """使用 LLM 分析单个文件"""
+        from typing import List, Dict
+        """Use LLM to analyze a single file"""
         with open(file_path, "r", encoding="utf-8") as file:
             file_content = file.read()
 
-        # 构造消息格式
+        # Construct message format
         messages = [
-    {"role": "system", "content": "You are a software architecture analyst analyzing a source code project. Your responses must be clear and concise."},
-    {"role": "user", "content": f"Please provide an overview of the following program file. The file name is {file_path}, and the file content is {file_content}"}
-]
+            {"role": "system", "content": "You are a software architecture analyst analyzing a source code project. Your responses must be clear and concise."},
+            {"role": "user", "content": f"Please provide an overview of the following program file. The file name is {file_path}, and the file content is {file_content}"}
+        ]
 
-
-        # 调用 API 并返回结果
+        # Call API and return result
         response = llm_client.generate_response(messages)
         return {
             "file": file_path,
@@ -57,7 +56,7 @@ flowchart LR
         import json
         import threading
         from concurrent.futures import ThreadPoolExecutor
-        from typing import List, Dict  
+        from typing import List, Dict
         """Adds 'prefix' to the beginning of selected lines in 'text'.
 
         If 'predicate' is provided, 'prefix' will only be added to the lines
@@ -79,7 +78,8 @@ flowchart LR
         import json
         import threading
         from concurrent.futures import ThreadPoolExecutor
-        from typing import List, Dict  
+        from typing import List, Dict
+
         class FileNode:
             def __init__(self, name):
                 self.name = name
@@ -162,14 +162,15 @@ flowchart LR
         cc = "\n".join(file_tree_struct.parenting_ship)
         ccc = indent(cc, prefix=" "*8)
         return MERMAID_TEMPLATE.format(graph_name=graph_name, relationship=ccc)
-    # 输入处理
+
+    # Input handling
     def get_file_manifest(project_folder: str) -> List[str]:
         import os
         import json
         import threading
         from concurrent.futures import ThreadPoolExecutor
-        from typing import List, Dict    
-        """获取目录下的 Python 文件列表"""
+        from typing import List, Dict
+        """Get a list of Python files in the directory"""
         if not os.path.exists(project_folder):
             raise FileNotFoundError(f"filepath {project_folder} not exist!")
 
@@ -184,14 +185,15 @@ flowchart LR
         if len(file_manifest) > 512:
             raise ValueError("over 512!")
         return file_manifest
-# 多线程逐文件分析
+
+    # Multithreaded analysis of each file
     def analyze_files_multithread(file_manifest: List[str]) -> List[Dict]:
         import os
         import json
         import threading
         from concurrent.futures import ThreadPoolExecutor
-        from typing import List, Dict  
-        """多线程分析文件"""
+        from typing import List, Dict
+        """Analyze files with multithreading"""
         results = []
         with ThreadPoolExecutor(max_workers=8) as executor:
             futures = {executor.submit(analyze_single_file, file): file for file in file_manifest}
@@ -201,7 +203,7 @@ flowchart LR
                 except Exception as e:
                     print(f"error when analyzing {futures[future]} : {e}")
         return results
-    
+
     class LLMClient:
         def __init__(self, base_url: str, api_key: str, model: str):
             from openai import OpenAI
@@ -210,18 +212,18 @@ flowchart LR
 
         def generate_response(self, messages: List[Dict[str, str]]) -> Dict:
             """
-            调用 Sambanova LLM API 生成响应。
-            :param messages: 消息列表，包含 role 和 content 键。
-            :return: LLM 的生成结果，包含生成的内容和使用情况。
+            Call Sambanova LLM API to generate a response.
+            :param messages: A list of messages containing role and content keys.
+            :return: The generation result of the LLM, including generated content and usage information.
             """
             try:
-                # 调用 API 生成响应
+                # Call API to generate response
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages
                 )
 
-                # 检查响应是否包含生成的内容
+                # Check if the response contains generated content
                 if hasattr(response, 'choices') and len(response.choices) > 0:
                     message_content = response.choices[0].message.content
                     # usage_info = response.usage if hasattr(response, 'usage') else {}
@@ -236,87 +238,180 @@ flowchart LR
                 return {"content": "Call failed, please check the input or service status.", "usage": {}}
 
     llm_client = LLMClient(
-            base_url="https://api.sambanova.ai/v1",
-            api_key="614e1948-9d06-4764-8124-9cad201c8281",
-            model="Meta-Llama-3.1-8B-Instruct"
-        )
-    # Step 1: 获取文件清单
+        base_url="https://api.sambanova.ai/v1",
+        api_key="614e1948-9d06-4764-8124-9cad201c8281",
+        model="Meta-Llama-3.1-8B-Instruct"
+    )
+    # Step 1: Get file manifest
     file_manifest = get_file_manifest(project_folder)
-    print(f"发现 {len(file_manifest)} 个文件，开始分析...")
+    print(f"Found {len(file_manifest)} files, starting analysis...")
 
-    # Step 2: 多线程逐文件分析
+    # Step 2: Multithreaded analysis of each file
     analysis_results = analyze_files_multithread(file_manifest)
-    print("逐文件分析完成，保存中间结果...")
-    with open(os.path.join(output_folder, "file_analysis.json"), "w", encoding="utf-8") as f:
+    print("Analysis complete, saving intermediate results...")
+    file_analysis_path = os.path.join(output_folder, "file_analysis.json")
+    with open(file_analysis_path, "w", encoding="utf-8") as f:
         json.dump(analysis_results, f, ensure_ascii=False, indent=4)
-    # 批量汇总分析
+
+    def generate_markdown_table(analysis_results: List[Dict]) -> str:
+        """
+        Generate a Markdown table based on the analysis results.
+        :param analysis_results: A list containing file names and analysis content.
+        :return: A Markdown formatted table string.
+        """
+        table_lines = ["| File Name | Function Description |", "|---|---|"]  # Table header
+        for result in analysis_results:
+            file_name = os.path.basename(result["file"])
+            analysis = result["analysis"].replace("\n", " ").strip()
+            table_lines.append(f"| {file_name} | {analysis} |")
+        return "\n".join(table_lines)
+
+    # Summarize in batches
     def summarize_files_in_batches(analysis_results: List[Dict], batch_size: int = 16) -> List[Dict]:
         import os
         import json
         import threading
         from concurrent.futures import ThreadPoolExecutor
-        from typing import List, Dict  
-        """按批次汇总文件分析结果"""
+        from typing import List, Dict
+        """Summarize file analysis results in batches"""
         summaries = []
         for i in range(0, len(analysis_results), batch_size):
             batch = analysis_results[i:i + batch_size]
             file_descriptions = "\n".join([f"{res['file']}: {res['analysis']}" for res in batch])
 
-            # 构造消息格式
+            # Construct message format
             messages = [
-    {"role": "system", "content": "You are a software architecture analyst, analyzing the source code of a project."},
-    {"role": "user", "content": f"Briefly describe the functionality of the following files using a Markdown table:\n{file_descriptions}\nBased on the above analysis, summarize the overall functionality of the program in one sentence."}
-]
+                {"role": "system", "content": "You are a software architecture analyst, analyzing the source code of a project."},
+                {"role": "user", "content": f"Briefly describe the functionality of the following files using a Markdown table:\n{file_descriptions}\nBased on the above analysis, summarize the overall functionality of the program in one sentence."}
+            ]
 
-
-            # 调用 API 并保存结果
+            # Call API and save result
             response = llm_client.generate_response(messages)
             summaries.append({
                 "batch_start": i,
                 "batch_end": i + batch_size,
                 "summary": response["content"]
             })
-        return summaries
-    # 可视化文件树
+        markdown_table = generate_markdown_table(analysis_results)
+        return summaries, markdown_table
+
+    # File tree visualization
     def generate_file_tree_diagram(project_folder: str, file_manifest: List[str], file_comments: List[str]) -> str:
         import os
         import json
         import threading
         from concurrent.futures import ThreadPoolExecutor
-        from typing import List, Dict  
+        from typing import List, Dict
         """
-        生成项目文件树的 Mermaid.js 图表。
-        :param project_folder: 项目根目录。
-        :param file_manifest: 文件路径列表。
-        :param file_comments: 对应文件的评论或分析。
-        :return: Mermaid.js 格式的文件树图表。
+        Generate a Mermaid.js diagram of the project file tree.
+        :param project_folder: The root directory of the project.
+        :param file_manifest: List of file paths.
+        :param file_comments: Corresponding comments or analysis of the files.
+        :return: Mermaid.js formatted file tree diagram.
         """
-        graph_name = "项目文件树"
+        graph_name = "Project File Tree"
         diagram_code = build_file_tree_mermaid_diagram(file_manifest, file_comments, graph_name)
         return diagram_code
 
-    # Step 3: 批量汇总分析
-    summaries = summarize_files_in_batches(analysis_results)
-    print("汇总分析完成，保存结果...")
-    with open(os.path.join(output_folder, "summary_analysis.json"), "w", encoding="utf-8") as f:
+    # Step 3: Summarize in batches
+    summaries, markdown_table = summarize_files_in_batches(analysis_results)
+    print("Summary analysis complete, saving results...")
+    summary_analysis_path = os.path.join(output_folder, "summary_analysis.json")
+    with open(summary_analysis_path, "w", encoding="utf-8") as f:
         json.dump(summaries, f, ensure_ascii=False, indent=4)
 
-    # 提取汇总内容为 Markdown 表格
-    markdown_summary = "| File | Analysis |\n| --- | --- |\n"
-    for result in analysis_results:
-        markdown_summary += f"| {os.path.basename(result['file'])} | {result['analysis']} |\n"
+    # Save Markdown table
+    markdown_file_path = os.path.join(output_folder, "file_summary.md")
+    with open(markdown_file_path, "w", encoding="utf-8") as f:
+        f.write(markdown_table)
+    print(f"Markdown table saved to: {markdown_file_path}")
 
-    # Step 4: 生成文件树可视化
-    # 从分析结果中提取文件注释（分析内容）
+    def convert_file_analysis_to_md(file_analysis_results: List[Dict]) -> str:
+        """
+        Convert the per-file analysis results to a Markdown table.
+        :param file_analysis_results: List of file analysis results.
+        :return: Markdown table string.
+        """
+        table_lines = ["| File Path | Analysis Content |", "|---|---|"]  # Table header
+        for result in file_analysis_results:
+            file_path = result["file"]
+            analysis = result["analysis"].replace("\n", " ").strip()
+            table_lines.append(f"| {file_path} | {analysis} |")
+        return "\n".join(table_lines)
+
+    def convert_summary_analysis_to_md(summary_results: List[Dict]) -> str:
+        """
+        Convert the project functionality summary analysis to Markdown format.
+        :param summary_results: List of summary analysis results.
+        :return: Markdown content string.
+        """
+        md_content = ["# Project Functionality Summary Analysis\n"]
+        for summary in summary_results:
+            batch_start = summary["batch_start"]
+            batch_end = summary["batch_end"]
+            summary_content = summary["summary"]
+
+            md_content.append(f"## Batch {batch_start + 1} to {batch_end}")
+            md_content.append(summary_content)
+            md_content.append("")  # Blank line separator
+        return "\n".join(md_content)
+
+    # Step 4: Convert file_analysis.json and summary_analysis.json to Markdown
+    file_analysis_md = convert_file_analysis_to_md(analysis_results)
+    file_analysis_md_path = os.path.join(output_folder, "file_analysis.md")
+    with open(file_analysis_md_path, "w", encoding="utf-8") as f:
+        f.write(file_analysis_md)
+
+    summary_analysis_md = convert_summary_analysis_to_md(summaries)
+    summary_analysis_md_path = os.path.join(output_folder, "summary_analysis.md")
+    with open(summary_analysis_md_path, "w", encoding="utf-8") as f:
+        f.write(summary_analysis_md)
+
+    print(f"Markdown conversion complete! Files saved at:\n  {file_analysis_md_path}\n  {summary_analysis_md_path}")
+
+    # Step 5: Generate file tree visualization
     file_comments = [result["analysis"] for result in analysis_results]
     file_tree_diagram = generate_file_tree_diagram(project_folder, file_manifest, file_comments)
     with open(os.path.join(output_folder, "file_tree.md"), "w", encoding="utf-8") as f:
         f.write(file_tree_diagram)
 
-    return (
-            f"Analysis complete! The result has been saved to {output_folder}\n\n"
-            f"### File Tree:\n{file_tree_diagram}\n\n"
-            f"### File Analysis Summary:\n{markdown_summary}"
-            f"请以markdown格式展现File Analysis Summary"
-            )
+    def convert_md_to_base64_image(md_file_path):
+        import markdown2
+        import imgkit
+        import base64
+        import os
 
+        # 1. Convert Markdown file to HTML
+        with open(md_file_path, 'r', encoding='utf-8') as md_file:
+            markdown_text = md_file.read()
+
+        # Use markdown2 to convert Markdown to HTML
+        html_text = markdown2.markdown(markdown_text)
+
+        # 2. Convert HTML to image
+        html_file_path = "temp_file_analysis_md.html"
+        image_file_path = "temp_file_analysis_md.png"
+        
+        try:
+            # Save HTML to a temporary file
+            with open(html_file_path, 'w', encoding='utf-8') as html_file:
+                html_file.write(html_text)
+
+            # Use imgkit to convert HTML to image
+            imgkit.from_file(html_file_path, image_file_path)
+
+            # 3. Convert image to Base64 encoding
+            with open(image_file_path, "rb") as image_file:
+                base64_encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+        finally:
+            # Delete temporary files
+            if os.path.exists(html_file_path):
+                os.remove(html_file_path)
+            if os.path.exists(image_file_path):
+                os.remove(image_file_path)
+
+        return base64_encoded_image
+    #return(convert_md_to_base64_image(os.path.join(output_folder, "file_tree.md")))
+    return(
+           f"### File Analysis Summary:\n{summary_analysis_md}"
+           f"Analysis complete! Results have been saved to {output_folder}")

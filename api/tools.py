@@ -12,6 +12,7 @@ from functions.docker_functions import start_docker_container, stop_docker_conta
 from functions.coding_functions import read_and_identify_code, gather_project_files, start_code_execution_container, execute_code_in_container, capture_container_logs, handle_code_execution, install_dependencies, create_tar_with_file#generate_mermaid_diagram
 from functions.generate_image import create_image
 from functions.crazy_functions import analyze_project
+from functions.crazy_translate import pdf_translate
 # Initialize the client
 client = create_client()
 
@@ -38,6 +39,7 @@ create_image_tool = client.create_tool(create_image, name="create_image")
 analyze_directory_tool = client.create_tool(analyze_directory, name="analyze_directory")
 #generate_mermaid_diagram_tool = client.create_tool(generate_mermaid_diagram, name="generate_mermaid_diagram")
 analyze_project_tool = client.create_tool(analyze_project, name="analyze_project")
+pdf_translate_tool = client.create_tool(pdf_translate, name="pdf_translate")
 # Export the tools
 all_tools = [
     read_and_identify_code_tool, start_code_execution_container_tool,
@@ -45,5 +47,5 @@ all_tools = [
     install_dependencies_tool, execute_code_in_container_tool, capture_container_logs_tool, handle_code_execution_tool,
     schedule_event_tool, list_upcoming_events_tool, gather_project_files_tool,
     start_docker_container_tool, stop_docker_container_tool, create_tar_with_file_tool,
-    write_file_tool, read_file_tool, sms_tool, search_tool, create_image_tool,analyze_project_tool#generate_mermaid_diagram_tool#,analyze_directory_tool
+    write_file_tool, read_file_tool, sms_tool, search_tool, create_image_tool,analyze_project_tool,pdf_translate_tool#generate_mermaid_diagram_tool#,analyze_directory_tool
 ]

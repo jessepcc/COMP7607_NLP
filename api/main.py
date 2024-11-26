@@ -249,7 +249,10 @@ async def websocket_endpoint(websocket: WebSocket):
                                 "message": function_return
                             }
                             if pre_function_name=="analyze_project":
-                                await websocket.send_json(function_return)
+                                #
+                                # print(function_return['message'])
+                                await websocket.send_text(function_return)
+                                #await websocket.send(function_return)
                                 pre_function_name="none"
                             else:
                                 await websocket.send_json(function_return_message)
