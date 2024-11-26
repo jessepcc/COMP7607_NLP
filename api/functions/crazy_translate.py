@@ -376,11 +376,12 @@ def pdf_translate(self, input_path: str, output_path: str) -> str:
         ]
         final_report_md.extend(gpt_response_collection_md)
         create_report_file_name_md = f"{os.path.basename(fp)}.trans.md"
-        print(paper_meta_info.replace('# ', '### '))
+        
         with open(create_report_file_name_md, 'w', encoding='utf-8') as f:
             f.write("\n".join(final_report_md))
 
         print(f"Markdown报告生成: {create_report_file_name_md}")
+        return(paper_meta_info.replace('# ', '### '))
 
 
 
@@ -400,13 +401,14 @@ def pdf_translate(self, input_path: str, output_path: str) -> str:
     # 调用处理函数
     try:
         print(f"Processing PDF file: {input_path}")
-        process_pdf(fp=input_path)
+        result = process_pdf(fp=input_path)
 
         # 将生成的 Markdown 文件移动到输出目录
         md_report_name = f"{os.path.basename(input_path)}.trans.md"
         md_report_path = os.path.join(output_path, md_report_name)
         os.rename(md_report_name, md_report_path)
-
-        return(f"Markdown report saved to: {md_report_path}")
+        print("result:")
+        return(result)
+        #return(f"Markdown report saved to: {md_report_path}")
     except Exception as e:
         return(f"Error occurred during processing: {e}")

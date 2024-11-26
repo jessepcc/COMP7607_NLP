@@ -248,7 +248,7 @@ async def websocket_endpoint(websocket: WebSocket):
                                 "type": "function_return",
                                 "message": function_return
                             }
-                            if pre_function_name=="analyze_project":
+                            if pre_function_name=="analyze_project" or pre_function_name=="pdf_translate":
                                 #
                                 # print(function_return['message'])
                                 await websocket.send_text(function_return)
